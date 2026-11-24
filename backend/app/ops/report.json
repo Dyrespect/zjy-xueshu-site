@@ -1,0 +1,18 @@
+{
+  "说明": "每日汇报有哪几段、什么顺序（数据）。第一段必须是 problems（有没有问题；没有就写「一切正常」），scripts/check.py 规矩 19 查。每段怎么写在 report.py 同名函数里。标题里的 {day} 换成「今天」「昨天」或日期。counts：look 段第一行数哪几样（event:事件类型，where 是事件内容要满足的条件）。",
+  "sections": [
+    {"key": "problems", "title": "有没有要你处理的问题", "required": true},
+    {"key": "look", "title": "{day}的单和需要你看一眼的"},
+    {"key": "site", "title": "{day}网站运行"},
+    {"key": "business", "title": "{day}业务数据"},
+    {"key": "suggestions", "title": "新收集的建议"},
+    {"key": "todo", "title": "待处理事项"}
+  ],
+  "counts": [
+    {"label": "新客户", "event": "intake.customer_created"},
+    {"label": "认领", "event": "intake.order_claimed"},
+    {"label": "开工", "event": "intake.stage", "where": {"to": "making"}},
+    {"label": "交付", "event": "delivery.proof_published"},
+    {"label": "完成", "event": "intake.order_completed"}
+  ]
+}

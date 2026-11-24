@@ -1,0 +1,138 @@
+{
+  "_说明": "需求卡的默认选项和默认值（docs/任务单/09_需求引导_方案.md）。后台「设置 → 需求卡」改了存库（intake_kv 的 brief），读的时候库里的覆盖这里。题目和选项是方案第 1 条点名的；每个选项的示例句、样张的标题和说明是 Claude 写的草稿，Edison 看了再改。样张图用官网素材库「页面_组会」里讲公开论文、已打码的页（scripts/site_assets.py 出到 /site-assets/v2/），官网 v2 定了样张以后在后台换成同一批。前端不许写死这些字（scripts/check.py 规矩 21）。",
+  "remind_after_hours": 2,
+  "minutes_step": 5,
+  "minutes_floor": 5,
+  "questions": [
+    {
+      "key": "occasion",
+      "title": "这次是什么场合",
+      "hint": "选最接近的就行",
+      "kind": "single",
+      "fact": "occasion",
+      "default": "group",
+      "options": [
+        {"key": "group", "label": "组会读文献", "example": "给导师和同门讲一篇或几篇别人的论文", "fact": "组会文献"},
+        {"key": "proposal", "label": "开题", "example": "讲自己打算做的研究：问题、方法、预期", "fact": "开题"},
+        {"key": "midterm", "label": "中期", "example": "开题以后讲进展：做了什么、结果怎样、接下来做什么", "fact": "中期"},
+        {"key": "defense", "label": "答辩", "example": "毕业论文答辩，评委会追问", "fact": "答辩"},
+        {"key": "conference", "label": "会议报告", "example": "学术会议上讲自己的论文，时间卡得紧", "fact": "会议"},
+        {"key": "course", "label": "课程汇报", "example": "课上讲老师指定的文献", "fact": "课程文献"}
+      ]
+    },
+    {
+      "key": "audience",
+      "title": "主要讲给谁听",
+      "hint": "决定要不要先铺背景、术语讲多细",
+      "kind": "single",
+      "default": "lab",
+      "options": [
+        {"key": "lab", "label": "导师和同门", "example": "都懂这个方向，可以直接讲方法和结果"},
+        {"key": "committee", "label": "答辩评委", "example": "会追问设计和结论站不站得住，逻辑要严"},
+        {"key": "cross", "label": "跨领域的人", "example": "不一定懂术语，先讲清背景、少用缩写"},
+        {"key": "intl", "label": "国际会议", "example": "英文听众，时间短，一页一个结论"}
+      ]
+    },
+    {
+      "key": "minutes",
+      "title": "讲多久",
+      "hint": "从你买的档位带出来，可以往下调，不能超过档位上限",
+      "kind": "minutes",
+      "default": "tier_max",
+      "options": []
+    },
+    {
+      "key": "language",
+      "title": "PPT 用什么语言",
+      "hint": "",
+      "kind": "single",
+      "fact": "language",
+      "default": "zh",
+      "options": [
+        {"key": "zh", "label": "中文", "example": "页面和讲稿都用中文", "fact": "中文"},
+        {"key": "en", "label": "英文", "example": "页面和讲稿都用英文", "fact": "英文"},
+        {"key": "mixed", "label": "中文页面，术语保留英文", "example": "比如「交叉滞后模型（CLPM）」，第一次出现写全称", "fact": "中文（术语英文）"}
+      ]
+    },
+    {
+      "key": "template",
+      "title": "有没有要套的模板",
+      "hint": "",
+      "kind": "single",
+      "default": "ours",
+      "options": [
+        {"key": "upload", "label": "有学校或组里的模板", "example": "传上来，照它的版式、配色、字体做", "upload": true},
+        {"key": "ours", "label": "没有，你们定", "example": "按学校的配色和校徽做一套干净的"}
+      ]
+    },
+    {
+      "key": "focus",
+      "title": "最想让听众记住什么",
+      "hint": "可以不选，也可以多选",
+      "kind": "multi",
+      "optional": true,
+      "allow_note": true,
+      "note_placeholder": "也可以写一句，比如「导师上次问为什么用这个范式」",
+      "default": [],
+      "options": [
+        {"key": "method", "label": "方法讲明白", "example": "实验怎么做的、模型怎么读"},
+        {"key": "findings", "label": "结论和证据", "example": "每个结论配上对应的结果图"},
+        {"key": "critique", "label": "不足和启发", "example": "导师常问「你怎么看这篇」"},
+        {"key": "story", "label": "一条线讲下来", "example": "问题、方法、结果、意义环环相扣"}
+      ]
+    },
+    {
+      "key": "avoid",
+      "title": "不要什么",
+      "hint": "可以不选，也可以多选",
+      "kind": "multi",
+      "optional": true,
+      "allow_note": true,
+      "note_placeholder": "还有别的不要的，写一句",
+      "default": [],
+      "options": [
+        {"key": "wordy", "label": "字太多", "example": "一页一大段，听众来不及读"},
+        {"key": "flashy", "label": "太花", "example": "颜色、装饰太多"},
+        {"key": "animation", "label": "动画", "example": "切换、飞入这类效果"},
+        {"key": "cartoon", "label": "卡通图标", "example": "小人、表情这类装饰图"},
+        {"key": "english_blocks", "label": "大段英文原文", "example": "把原文整段贴上去"}
+      ]
+    }
+  ],
+  "style": {
+    "title": "看几份样张：最像你想要的是哪份",
+    "hint": "都是我们做过的组会稿，讲的是公开发表的论文",
+    "none_label": "都不像",
+    "none_placeholder": "说一句你想要的样子，比如「再简洁一点，图大一点」",
+    "default": "",
+    "default_text": "你们定",
+    "samples": [
+      {"key": "n01", "title": "图解为主，导航清楚", "note": "每页一张示意图，上方标出讲到哪一部分，适合几篇合讲", "image": "/site-assets/v2/n01-960.webp", "source": "多篇合讲 · 四篇中文期刊实证研究（叶文婷等，2025 等）"},
+      {"key": "n07", "title": "色块标题，范式一步一格", "note": "标题栏醒目，实验流程按时间一格一格画出来", "image": "/site-assets/v2/n07-960.webp", "source": "组会文献 · Liu et al. (2026), Computers in Human Behavior"},
+      {"key": "n10", "title": "表格对照，字少留白多", "note": "两篇研究左右对比，每格一句话", "image": "/site-assets/v2/n10-960.webp", "source": "组会文献 · Wang et al. (2022), NeuroImage；Cheng et al. (2022), SCAN"},
+      {"key": "n13", "title": "章节分明，图文并排", "note": "每章一个编号色块，原文的图按顺序排开讲", "image": "/site-assets/v2/n13-960.webp", "source": "组会 · 世界模型三篇（Wang et al., 2024 等）"}
+    ]
+  },
+  "refs": {
+    "title": "有旧材料可以传上来（可不传）",
+    "hint": "以前的 PPT、导师的修改意见截图、同门做的参考。我们只拿来参考，不算必交的资料。",
+    "max_files": 8
+  },
+  "texts": {
+    "page_title": "说清这次要什么",
+    "entry_label": "先说清这次要什么（约一分钟）",
+    "entry_hint": "点选场合、听众、风格，确认了才开工；资料回聊天里发。",
+    "chat_todo": "需求确认卡还没确认，确认了才开工",
+    "chat_done": "需求确认卡已确认",
+    "page_lead": "点选就行，不用打字。不知道的选「不知道，按推荐做」，大约一分钟。",
+    "default_label": "不知道，按推荐做",
+    "all_default_label": "全部按推荐，直接看确认卡",
+    "default_tag": "按推荐",
+    "card_title": "需求确认卡",
+    "card_lead": "这是你刚才选的。看一眼，对就点「对，开工」；没确认我们不开工。",
+    "confirm_label": "对，开工",
+    "edit_label": "改一下",
+    "confirmed_lead": "需求定好了。",
+    "sent_back_lead": "负责人按你说的改了几处，再看一眼。"
+  }
+}

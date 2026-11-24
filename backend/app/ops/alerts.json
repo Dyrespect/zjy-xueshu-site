@@ -1,0 +1,103 @@
+{
+ "说明": "告警规则（数据）。id 是规则名；level：urgent 要立刻处理 / today 今天看一下 / info 只是记录；link 是后台页面（必须以 /admin 开头，scripts/check.py 规矩 19 查）；impact 是影响什么；params 是阈值的默认值，后台「运维 → 设置」能改（存库里覆盖这里）。规则怎么算在 alerts.py 同名函数里。",
+ "rules": [
+  {
+   "id": "http_5xx",
+   "title": "网站报错变多",
+   "level": "urgent",
+   "link": "/admin/ops?tab=errors",
+   "impact": "客人打开页面或提交时会看到「服务器出错了」",
+   "params": {
+    "window_minutes": 10,
+    "ratio": 0.05,
+    "min_errors": 3
+   }
+  },
+  {
+   "id": "db_unwritable",
+   "title": "数据库写不进去",
+   "level": "urgent",
+   "link": "/admin/ops?tab=overview",
+   "impact": "下单、认领、聊天、交付全部失败",
+   "params": {}
+  },
+  {
+   "id": "pay_notify_invalid",
+   "title": "支付回调验签失败",
+   "level": "urgent",
+   "link": "/admin/channels",
+   "impact": "自有网页的客人可能付了钱却没建单、没拿到激活码",
+   "params": {
+    "window_minutes": 60,
+    "min_count": 1
+   }
+  },
+  {
+   "id": "pay_notify_silent",
+   "title": "支付通知很久没回来",
+   "level": "today",
+   "link": "/admin/channels",
+   "impact": "客人付了钱，但网关的付款通知没送到；要靠付款页主动查询才到账，客人关了页面就可能拿不到码",
+   "params": {
+    "after_minutes": 30,
+    "window_hours": 24,
+    "min_missing": 1
+   }
+  },
+  {
+   "id": "watermark_backlog",
+   "title": "水印出图积压",
+   "level": "urgent",
+   "link": "/admin/ops?tab=overview",
+   "impact": "客人收到水印版会变慢（交付时限在走）",
+   "params": {
+    "max_queue": 5,
+    "max_wait_minutes": 15,
+    "failed_hours": 24
+   }
+  },
+  {
+   "id": "disk_usage",
+   "title": "磁盘快满了",
+   "level": "today",
+   "link": "/admin/ops?tab=overview",
+   "impact": "满了以后数据库写不进、客人传不了文件、备份失败",
+   "params": {
+    "warn_pct": 80,
+    "urgent_pct": 90
+   }
+  },
+  {
+   "id": "backup_failed",
+   "title": "备份失败或太久没备份",
+   "level": "urgent",
+   "link": "/admin/ops?tab=backups",
+   "impact": "出事时恢复不了最近的订单和客户文件",
+   "params": {
+    "max_age_hours": 26
+   }
+  },
+  {
+   "id": "cert_expiring",
+   "title": "网站证书快到期",
+   "level": "today",
+   "link": "/admin/ops?tab=overview",
+   "impact": "到期后浏览器会拦住网站，支付回调也会失败",
+   "params": {
+    "warn_days": 14,
+    "urgent_days": 3
+   }
+  },
+  {
+   "id": "external_down",
+   "title": "外部服务连不上",
+   "level": "today",
+   "link": "/admin/ops?tab=overview",
+   "impact": "用到这个服务的功能会失败",
+   "params": {
+    "fail_times": 3,
+    "every_minutes": 10
+   }
+  }
+ ]
+}

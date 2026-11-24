@@ -1,0 +1,14 @@
+{
+  "_说明": "渠道档案（设计第七节第 2 条）：每个渠道走哪种收单段、用哪个适配器实现、发货内容用哪个模板、哪几种来源算确认收货。数值是我的建议（渠道与支付设计）。adapter、enabled 两项后台「渠道与收款 → 收款设置」能改（存在 platforms_profiles 表，盖过这里）；别的改这个文件。确认收货认哪几种来源以订单中枢设置 delivery.confirm_sources_by_platform 为准，这里的 confirm 只给后台看。",
+  "web": {"label": "自有网页", "intake": "checkout", "adapter": "web", "adapters": ["web"], "text_gate": false,
+          "deliver": "page", "confirm": ["customer", "auto", "edison"], "flow_key": "paid_custom", "enabled": true},
+  "xhs": {"label": "小红书", "intake": "parse_paid", "adapter": "manual_paste", "adapters": ["manual_paste", "fixed_link"],
+          "text_gate": true, "deliver": "manual", "delivery_template": "code_and_url", "allow_url": true,
+          "confirm": ["platform", "edison"], "remind_after_paid_hours": 49, "flow_key": "paid_custom", "enabled": true},
+  "xy":  {"label": "闲鱼", "intake": "parse_paid", "adapter": "manual", "adapters": ["manual"],
+          "text_gate": true, "deliver": "manual", "delivery_template": "code_and_url", "allow_url": true,
+          "confirm": ["edison"], "remind_after_paid_hours": 240, "flow_key": "paid_custom", "enabled": true},
+  "dy":  {"label": "抖音", "intake": "parse_paid", "adapter": "openapi", "adapters": ["openapi"],
+          "text_gate": true, "deliver": "api", "delivery_template": "code_only", "allow_url": false,
+          "confirm": ["platform", "edison"], "remind_after_paid_hours": 72, "flow_key": "paid_custom", "enabled": false}
+}

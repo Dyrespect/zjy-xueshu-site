@@ -1,0 +1,15 @@
+{
+  "说明": "运维的定时任务（流程是数据）：每个任务跑一个节点；every_sec 每隔几秒，at 每天几点（北京时间，config:xxx 表示取后台设置），every_days 隔几天跑一次（配 at）；enabled 取设置里的开关；after 是这个节点出口为 on 时接着跑的节点（输入都是空，节点自己读要的东西）；per_process 是每个网站进程各自跑（计数在各自内存里）；catchup_hours 是过了点几小时内还补跑（默认 6）。改顺序、加任务改这里，不改代码。scheduler.py 执行。",
+  "jobs": [
+    {"id": "flush", "label": "计数落库", "node": "ops.metrics_flush", "every_sec": 60, "per_process": true},
+    {"id": "alerts", "label": "告警检查", "node": "ops.alert_eval", "every_sec": 120},
+    {"id": "rollup", "label": "小时聚合", "node": "ops.metrics_rollup", "every_sec": 900},
+    {"id": "purge", "label": "按保留期清理", "node": "ops.retention_purge", "at": "04:10"},
+    {"id": "report", "label": "每日汇报", "node": "ops.daily_report", "at": "config:report.time", "enabled": "config:report.enabled"},
+    {"id": "backup", "label": "备份", "node": "ops.backup_run", "at": "config:backup.time", "enabled": "config:backup.enabled",
+     "after": [{"on": "ok", "node": "ops.backup_prune"}]},
+    {"id": "drill", "label": "恢复演练", "node": "ops.restore_drill", "at": "05:00", "every_days": "config:backup.drill_every_days",
+     "enabled": "config:backup.enabled"},
+    {"id": "lifecycle", "label": "保存期限盘点", "node": "ops.lifecycle_scan", "at": "04:30"}
+  ]
+}

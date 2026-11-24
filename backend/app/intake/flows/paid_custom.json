@@ -1,0 +1,361 @@
+{
+  "key": "paid_custom",
+  "name": "付费定制主流程",
+  "description": "客人在某个渠道付款拿到激活码，在网页或微信客服里认领，助手按清单收资料，客人对着需求确认卡点了「对，开工」（或负责人代确认）、代码判断能开工才交接给 PPT 工厂（没确认不开工）；制作方交成品包后自动出水印图、发布给客人看，含一轮修改；订单到已完成（客人确认、平台信号、超时、后台）才发最终版。平台的「已完成」来得早就先记下，到发布那一步直接放最终版；已交付后还剩修改次数的，改完直接放新的最终版。已完成之前都能作废（撤单退码、退款作废码）。出处：生态顶层设计第四、十八节，交付与退款方案，模块 E 设计第五节。 需求卡闸口：docs/任务单/09_需求引导_方案.md。",
+  "stages": [
+    {
+      "key": "paid",
+      "label": "已付款"
+    },
+    {
+      "key": "claimed",
+      "label": "已认领"
+    },
+    {
+      "key": "collecting",
+      "label": "收资料"
+    },
+    {
+      "key": "making",
+      "label": "制作中"
+    },
+    {
+      "key": "watermarked",
+      "label": "已交水印版"
+    },
+    {
+      "key": "revising",
+      "label": "修改中"
+    },
+    {
+      "key": "completed",
+      "label": "已完成"
+    },
+    {
+      "key": "delivered",
+      "label": "已交付"
+    },
+    {
+      "key": "void",
+      "label": "作废"
+    }
+  ],
+  "start": "paid",
+  "steps": [
+    {
+      "id": "paid",
+      "stage": "paid",
+      "node": "order.create",
+      "label": "等客人来认领",
+      "edges": [
+        {
+          "on": "claimed",
+          "to": "claimed"
+        },
+        {
+          "on": "voided",
+          "to": "void"
+        }
+      ]
+    },
+    {
+      "id": "claimed",
+      "stage": "claimed",
+      "node": "order.claim",
+      "label": "认领了，等第一份资料",
+      "edges": [
+        {
+          "on": "changed",
+          "to": "brief"
+        },
+        {
+          "on": "brief_confirmed",
+          "to": "brief",
+          "label": "客人点了「对，开工」/ 负责人代确认"
+        },
+        {
+          "on": "voided",
+          "to": "void"
+        }
+      ]
+    },
+    {
+      "id": "collecting",
+      "stage": "collecting",
+      "node": "intake.collect",
+      "label": "按清单收资料，齐了排队",
+      "edges": [
+        {
+          "on": "changed",
+          "to": "brief"
+        },
+        {
+          "on": "brief_confirmed",
+          "to": "brief",
+          "label": "客人点了「对，开工」/ 负责人代确认"
+        },
+        {
+          "on": "start_now",
+          "to": "brief_now",
+          "manual": true,
+          "label": "现在开工（不等条件齐；需求卡要先确认）"
+        },
+        {
+          "on": "voided",
+          "to": "void"
+        }
+      ]
+    },
+    {
+      "id": "brief",
+      "stage": "collecting",
+      "node": "gate.brief_confirmed",
+      "enter": "gate.brief_confirmed",
+      "label": "需求卡确认了没有（没确认不开工）",
+      "edges": [
+        {
+          "on": "exit:confirmed",
+          "to": "gate"
+        },
+        {
+          "on": "exit:wait",
+          "to": "collecting"
+        }
+      ]
+    },
+    {
+      "id": "gate",
+      "stage": "collecting",
+      "node": "gate.ready",
+      "enter": "gate.ready",
+      "label": "代码判断能不能开工",
+      "edges": [
+        {
+          "on": "exit:start",
+          "to": "making"
+        },
+        {
+          "on": "exit:wait",
+          "to": "collecting"
+        }
+      ]
+    },
+    {
+      "id": "brief_now",
+      "stage": "collecting",
+      "node": "gate.brief_confirmed",
+      "enter": "gate.brief_confirmed",
+      "label": "后台点了现在开工：先看需求卡确认了没有",
+      "edges": [
+        {
+          "on": "exit:confirmed",
+          "to": "making"
+        },
+        {
+          "on": "exit:wait",
+          "to": "collecting"
+        }
+      ]
+    },
+    {
+      "id": "making",
+      "stage": "making",
+      "node": "factory.handoff",
+      "enter": "factory.handoff",
+      "label": "交接给工厂，做 PPT",
+      "edges": [
+        {
+          "on": "package_received",
+          "to": "proofing"
+        },
+        {
+          "on": "voided",
+          "to": "void"
+        }
+      ]
+    },
+    {
+      "id": "proofing",
+      "stage": "making",
+      "node": "deliver.watermark",
+      "enter": "deliver.watermark",
+      "label": "出水印图",
+      "edges": [
+        {
+          "on": "exit:ok",
+          "to": "publish"
+        },
+        {
+          "on": "proof_ready",
+          "to": "publish"
+        },
+        {
+          "on": "package_received",
+          "to": "proofing",
+          "label": "重传了一版"
+        },
+        {
+          "on": "voided",
+          "to": "void"
+        }
+      ]
+    },
+    {
+      "id": "publish",
+      "stage": "making",
+      "node": "deliver.preview",
+      "enter": "deliver.preview",
+      "label": "把水印版发布给客人",
+      "edges": [
+        {
+          "on": "exit:published",
+          "to": "confirm",
+          "when": [
+            {
+              "field": "platform_completed",
+              "op": "eq",
+              "value": true
+            }
+          ],
+          "label": "平台早就确认收货了，直接放最终版"
+        },
+        {
+          "on": "exit:published",
+          "to": "watermarked"
+        },
+        {
+          "on": "proof_ready",
+          "to": "publish",
+          "manual": true,
+          "label": "重新发布水印版"
+        },
+        {
+          "on": "voided",
+          "to": "void"
+        }
+      ]
+    },
+    {
+      "id": "watermarked",
+      "stage": "watermarked",
+      "node": "deliver.preview",
+      "label": "交了水印版，等客人看",
+      "edges": [
+        {
+          "on": "revision",
+          "to": "revising"
+        },
+        {
+          "on": "completed",
+          "to": "confirm",
+          "manual": true,
+          "label": "确认收货（平台已完成、客人说收到了）"
+        },
+        {
+          "on": "voided",
+          "to": "void"
+        }
+      ]
+    },
+    {
+      "id": "revising",
+      "stage": "revising",
+      "node": "revision.collect",
+      "label": "按改稿单改",
+      "edges": [
+        {
+          "on": "package_received",
+          "to": "proofing",
+          "loop": true,
+          "label": "改好的那版交上来了"
+        },
+        {
+          "on": "completed",
+          "to": "confirm",
+          "manual": true,
+          "label": "确认收货（平台已完成、客人说收到了）"
+        },
+        {
+          "on": "voided",
+          "to": "void"
+        }
+      ]
+    },
+    {
+      "id": "confirm",
+      "stage": "completed",
+      "node": "confirm.receipt",
+      "enter": "confirm.receipt",
+      "label": "记下确认收货（谁确认的、什么时候）",
+      "edges": [
+        {
+          "on": "exit:completed",
+          "to": "completed"
+        }
+      ]
+    },
+    {
+      "id": "completed",
+      "stage": "completed",
+      "node": "gate.final",
+      "enter": "gate.final",
+      "label": "已完成，发最终版",
+      "edges": [
+        {
+          "on": "exit:released",
+          "to": "delivered"
+        },
+        {
+          "on": "final_ready",
+          "to": "completed",
+          "manual": true,
+          "label": "发最终版"
+        },
+        {
+          "on": "package_received",
+          "to": "completed",
+          "label": "改好的那版到了，重放最终版"
+        }
+      ]
+    },
+    {
+      "id": "delivered",
+      "stage": "delivered",
+      "node": "gate.final",
+      "label": "最终版发了（还剩修改次数的还能改）",
+      "edges": [
+        {
+          "on": "revision",
+          "to": "revising_after",
+          "loop": true,
+          "label": "用剩下的那轮修改"
+        },
+        {
+          "on": "package_received",
+          "to": "completed",
+          "loop": true,
+          "label": "又交了新的最终版"
+        }
+      ]
+    },
+    {
+      "id": "revising_after",
+      "stage": "revising",
+      "node": "revision.collect",
+      "label": "已交付后改（改完直接放新的最终版，不再出水印版）",
+      "edges": [
+        {
+          "on": "package_received",
+          "to": "completed"
+        }
+      ]
+    },
+    {
+      "id": "void",
+      "stage": "void",
+      "node": "order.void",
+      "label": "作废，停在作废时的进度",
+      "terminal": true
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "key": "entry_default",
+  "name": "付费定制：先认领再收资料",
+  "description": "客人每发一条先过这张表：按顺序取第一条满足的。有激活码就认领；有在走的单交给助手收资料；没认领的只问答，每天有上限；没认领时发的文件不收。条件只许用 route_rules.py 里列的词，不执行代码。",
+  "rules": [
+    {"id": "enter_code", "label": "带码进会话（兑换页的微信按钮）", "when": {"kind_in": ["enter"], "code": true}, "go": "claim"},
+    {"id": "enter_plain", "label": "进会话，没带码", "when": {"kind_in": ["enter"]}, "go": "welcome"},
+    {"id": "text_code", "label": "消息里认得出码，不是在走那单已用的码", "when": {"code": true, "code_new": true}, "go": "claim"},
+    {"id": "confirm_self", "label": "交了水印版，客人说确认收货（这个渠道认客人确认）", "when": {"stage_in": ["watermarked", "revising"], "confirm_said": true, "self_confirm": true}, "go": "confirm"},
+    {"id": "confirm_platform", "label": "交了水印版，客人说确认收货（平台单要去平台点）", "when": {"stage_in": ["watermarked", "revising"], "confirm_said": true, "self_confirm": false}, "go": "confirm_on_platform"},
+    {"id": "serve", "label": "有在走的已认领单：交给助手收资料、跟进度", "when": {"has_order": true}, "go": "serve"},
+    {"id": "file_refused", "label": "没认领发文件：不收、不下载", "when": {"kind_in": ["file", "image", "voice", "video"]}, "go": "file_refused"},
+    {"id": "visitor_qa", "label": "没认领、今天额度没用完：访客问答", "when": {"visitor_quota_left": true}, "go": "visitor_qa"},
+    {"id": "visitor_limited", "label": "没认领、今天额度用完：回一句固定的话（当天一次）", "when": {}, "go": "visitor_limited"}
+  ]
+}

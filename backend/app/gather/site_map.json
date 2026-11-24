@@ -1,0 +1,33 @@
+{
+  "_说明": "统一站点地图（模块 L）：官网、下单页 / 兑换页、图库三块共用的页头导航和页脚。只此一份：后端 /api/gather/site 按它出链接，前端页头页脚照它画，frontend/scripts/check-links.mjs 照它查链接通不通。section 是哪一块（main 官网、app 下单和兑换、figures 图库），网址前缀在 .env 的 SITE_MAIN_URL / SITE_APP_URL / SITE_FIGURES_URL。官网 11-18 已并进平台前端（frontend/src/pages/site/，页面清单 frontend/src/lib/site-pages.ts，站点整合 docs/任务单/08_官网整合_说明.md），ppt 一组的路径和那份清单对上；图库首页在 /tuku（站点根 / 是官网首页）。",
+  "brands": {
+    "ppt": {"name": "心理学汇报 PPT 定制", "section": "main", "path": "/"},
+    "figures": {"name": "心理学科研图库", "section": "figures", "path": "/tuku"}
+  },
+  "groups": [
+    {"key": "ppt", "title": "汇报 PPT 定制", "items": [
+      {"label": "价目", "section": "main", "path": "/price"},
+      {"label": "下单", "section": "app", "path": "/order"},
+      {"label": "交付说明", "section": "main", "path": "/service"},
+      {"label": "退款与售后", "section": "main", "path": "/refund"},
+      {"label": "关于我们", "section": "main", "path": "/about"}
+    ]},
+    {"key": "figures", "title": "心理学科研图库", "items": [
+      {"label": "找图", "section": "figures", "path": "/tuku"},
+      {"label": "提需求", "section": "figures", "path": "/request"},
+      {"label": "投图", "section": "figures", "path": "/submit"}
+    ]},
+    {"key": "more", "title": "更多", "items": [
+      {"label": "兑换激活码", "section": "app", "path": "/c"},
+      {"label": "把图库装进你的 AI", "section": "figures", "path": "/plugin"},
+      {"label": "版权问题", "section": "figures", "path": "/copyright"}
+    ]}
+  ],
+  "pages": {
+    "main": ["/", "/price", "/service", "/refund", "/about", "/help", "/contact", "/terms", "/privacy", "/disclaimer", "/sitemap"],
+    "app": ["/order", "/c", "/c/PSY-LINKCHECK"],
+    "figures": ["/tuku", "/request", "/submit", "/plugin", "/copyright", "/search?q=%E6%9C%89%E8%B0%83%E8%8A%82%E7%9A%84%E4%B8%AD%E4%BB%8B%E6%A8%A1%E5%9E%8B"]
+  },
+  "required_groups": ["ppt", "figures"],
+  "not_found_text": "页面不存在"
+}

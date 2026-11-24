@@ -1,0 +1,43 @@
+{
+  "key": "invoice_basic",
+  "subject": "invoice",
+  "name": "开票（默认）",
+  "description": "客人申请发票 → 过关口（订单已完成、没退款）→ 待开票 → 负责人上传发票标记已开 → 通知客人；没完成的先等着，订单完成后自动再过关口。开出前客人能撤回，负责人能驳回；开好的能作废（作废重开是新建一张）。",
+  "stages": [
+    {"key": "draft", "label": "等订单完成"},
+    {"key": "requested", "label": "待开票"},
+    {"key": "issued", "label": "已开票"},
+    {"key": "rejected", "label": "没开成"},
+    {"key": "voided", "label": "已作废"},
+    {"key": "cancelled", "label": "已撤回"}
+  ],
+  "start": "gate",
+  "steps": [
+    {"id": "gate", "stage": "draft", "node": "invoice.gate", "label": "能不能开票", "enter": "invoice.gate",
+     "edges": [
+       {"on": "exit:open", "to": "pending", "label": "能开：进待开票"},
+       {"on": "exit:wait", "to": "waiting", "label": "订单没完成或在退款中：先等着"},
+       {"on": "exit:blocked", "to": "blocked", "label": "不能开（退了款、作废了）"}
+     ]},
+    {"id": "waiting", "stage": "draft", "node": "invoice.request", "label": "等订单完成",
+     "edges": [
+       {"on": "recheck", "to": "gate", "label": "订单完成了 / 退款处理完了：再过一遍关口"},
+       {"on": "withdraw", "to": "cancelled", "label": "客人撤回"},
+       {"on": "rejected", "to": "rejected", "label": "负责人驳回"}
+     ]},
+    {"id": "pending", "stage": "requested", "node": "invoice.issue", "label": "待开票",
+     "edges": [
+       {"on": "issued", "to": "issued", "label": "上传发票、标记已开"},
+       {"on": "rejected", "to": "rejected", "label": "驳回（写原因）"},
+       {"on": "withdraw", "to": "cancelled", "label": "客人撤回"}
+     ]},
+    {"id": "issued", "stage": "issued", "node": "invoice.issue", "label": "已开票", "enter": "invoice.notify",
+     "edges": [
+       {"on": "voided", "to": "voided", "label": "作废（可以重开一张）"}
+     ]},
+    {"id": "rejected", "stage": "rejected", "node": "invoice.reject", "label": "驳回", "enter": "invoice.notify", "terminal": true},
+    {"id": "blocked", "stage": "rejected", "node": "invoice.gate", "label": "不能开", "enter": "invoice.notify", "terminal": true},
+    {"id": "voided", "stage": "voided", "node": "invoice.void", "label": "已作废", "enter": "invoice.notify", "terminal": true},
+    {"id": "cancelled", "stage": "cancelled", "node": "invoice.withdraw", "label": "客人撤回", "terminal": true}
+  ]
+}

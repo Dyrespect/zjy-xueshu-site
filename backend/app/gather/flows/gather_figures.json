@@ -1,0 +1,47 @@
+{
+  "key": "gather_figures",
+  "subject": "figure_unlock",
+  "name": "科研绘图聚人：领全量图库",
+  "description": "网页点「要全部图库？」→ 等他交转发截图（或他的链接带来足够的人）→ 核验 → 发网盘链接 → 给下单和公众号入口。核验方式、门都是可换的节点实现，改后台设置不改流程。",
+  "stages": [
+    {"key": "requested", "label": "等交截图"},
+    {"key": "checking", "label": "核验中"},
+    {"key": "passed", "label": "核验过了"},
+    {"key": "sent", "label": "已发链接"}
+  ],
+  "start": "requested",
+  "steps": [
+    {"id": "requested", "stage": "requested", "node": "figure.unlock_request", "label": "等他转发、交截图",
+     "edges": [
+       {"on": "evidence", "to": "verify", "label": "交了截图"},
+       {"on": "share_visit", "to": "verify", "when": [{"field": "verifiers", "op": "has", "value": "share_visits"}], "label": "他的链接带来一个新访客"},
+       {"on": "admin_pass", "to": "deliver", "manual": true, "label": "负责人直接给"}
+     ]},
+    {"id": "verify", "stage": "checking", "node": "figure.unlock_verify", "enter": "figure.unlock_verify",
+     "edges": [
+       {"on": "exit:pass", "to": "deliver", "label": "过了"},
+       {"on": "exit:need_more", "to": "requested", "loop": true, "label": "再交一张 / 再来几个人"},
+       {"on": "exit:fail", "to": "requested", "loop": true, "label": "不给"},
+       {"on": "exit:wait_admin", "to": "review", "label": "等负责人看"}
+     ]},
+    {"id": "review", "stage": "checking", "node": "figure.unlock_verify", "label": "等负责人看截图",
+     "edges": [
+       {"on": "admin_pass", "to": "deliver", "manual": true, "label": "截图没问题，发链接"},
+       {"on": "admin_reject", "to": "requested", "manual": true, "loop": true, "label": "截图不对，退回"}
+     ]},
+    {"id": "deliver", "stage": "passed", "node": "figure.pack_deliver", "enter": "figure.pack_deliver",
+     "edges": [
+       {"on": "exit:sent", "to": "sent", "label": "发了"},
+       {"on": "exit:resent", "to": "sent", "label": "重发了最新版"},
+       {"on": "exit:no_pack", "to": "wait_pack", "label": "后台还没贴链接"}
+     ]},
+    {"id": "wait_pack", "stage": "passed", "node": "figure.pack_deliver", "label": "后台还没贴网盘链接",
+     "edges": [
+       {"on": "pack_released", "to": "deliver", "label": "链接贴好了，自动补发"}
+     ]},
+    {"id": "sent", "stage": "sent", "node": "funnel.cta", "label": "发了；打不开就重发最新版",
+     "edges": [
+       {"on": "resend", "to": "deliver", "loop": true, "label": "打不开 / 有新版，重发"}
+     ]}
+  ]
+}

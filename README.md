@@ -1,58 +1,22 @@
-# 学术汇报平台 · 前端
+# 学术汇报平台
 
-心理学学术汇报 PPT 定制平台的网页前端（React + Vite + TypeScript），从私有仓库的 `frontend/` 导出，不含后端和提交历史。
+心理学学术汇报 PPT 定制平台的代码：官网、下单、图库、后台。从私有仓库导出当前版本（main 07bd03c），不含提交历史、部署文档、数据和图片。
 
-- 官网各页：`src/pages/site/`（首页 `HomePage.tsx`，文案和样张数据在 `content.ts`、`samples.ts`、`catalog.ts`）
-- 官网用的组件：`src/blocks/site-*`
-- 官网页面清单：`src/lib/site-pages.ts`
+## 前端 `frontend/`
+React 18 + Vite + TypeScript + Tailwind v4 + shadcn/ui。技术栈、代码分法、界面规矩见 `frontend/README.md`。
+
+- 官网各页：`frontend/src/pages/site/`（首页 `HomePage.tsx`，文案和样张数据在 `content.ts`、`samples.ts`、`catalog.ts`）
+- 官网组件：`frontend/src/blocks/site-*`；页面清单：`frontend/src/lib/site-pages.ts`
 - 官网图片（`public/site-assets/`）不在仓库里
 
-本地运行：`pnpm install && pnpm dev`（接口要连后端，没有后端时页面会缺数据）。
+## 后端 `backend/`
+Python（FastAPI + SQLAlchemy + Alembic），依赖见 `backend/pyproject.toml`、`requirements.lock`。
 
----
+- `app/website/` 官网设置、robots、下单前同意留痕
+- `app/intake/` 接单与接待机器人（小鱼）
+- `app/shop/` 商品、下单、支付；`app/invoices/` 发票；`app/delivery/` 交付
+- `app/figures/`、`app/gather/` 科研绘图图库
+- `app/admin/` 后台接口；`app/channels/`、`app/platforms/` 各接单渠道
+- `tests/` 测试
 
-
-# 前端说明（原 frontend/README.md）
-
-React 18 + Vite + TypeScript + Tailwind v4 + shadcn/ui（Radix）+ react-router 7 + lucide-react + sonner。
-
-## 怎么跑
-- 装：`pnpm install --frozen-lockfile`（或仓库根 `bash scripts/setup.sh`）
-- 开发：仓库根 `bash scripts/dev.sh`（后端 + 前端一起起）；只起前端：`pnpm dev`（`/api` 代理到 `127.0.0.1:$BACKEND_PORT`，默认 8710）
-- 类型检查：`pnpm typecheck`；构建：`pnpm build`
-- 走查：dev.sh 起着时 `pnpm e2e`（Chromium + WebKit）；截图：`SHOT=../docs/截图/xxx.png pnpm e2e --project=chromium`
-- 区块陈列（只在开发时有）：http://127.0.0.1:5173/dev/blocks
-
-## 代码怎么分
-```text
-src/styles/tokens.css      设计变量：色板 → 语义变量（shadcn 命名）→ Tailwind 类。全站唯一能写色值的地方
-src/index.css              引 Tailwind、tokens；基础样式
-src/components/ui/         shadcn 基础零件（button、input、card、dialog……）。改它等于改底座
-src/components/app-link.tsx  站内走路由、站外新窗口
-src/lib/api.ts             唯一发请求的地方：基址 /api，带 cookie，非 2xx 抛 ApiError（中文 message）
-src/lib/blocks.ts          区块陈列的约定（defineBlockDemo）
-src/blocks/<区块>/         一块一个文件夹：
-    Xxx.tsx                  组件，只吃 props，不取数
-    example.ts               示例数据：默认导出 defineBlockDemo({...})，自动出现在 /dev/blocks
-    load.ts                  （需要取数时）只调 src/lib/api.ts 或 src/lib/<区域>.ts
-    index.ts                 对外导出
-src/pages/                 页面由区块拼
-    <区域>/routes.tsx        默认导出 RouteObject[]，App.tsx 自动收集，不用改 App.tsx
-    DevBlocks.tsx            /dev/blocks（生产构建里没有）
-    NotFound.tsx             兜底 404
-```
-
-## 界面规矩（AGENTS.md 也有）
-- **平的近白底**：页面底是白，卡片底 `bg-card`（#F6F8FA）配细边 `border`；不用渐变、不用毛玻璃。
-- **标题实心近黑**：`text-foreground`（#1D2129），正文 `text-body`（#3C4048），次要字 `text-muted-foreground`（#80868F）。
-- **主按钮实心主色**：`<Button>` 默认就是 `bg-primary`（#1F4E9C）；一屏最多一两处高亮。
-- **卡片细边、不加大阴影**：Card 已去掉阴影；弹层（Dialog、Sheet）保留默认阴影。
-- **不放 emoji**；图标只用 lucide，**标题前不加装饰图标**。
-- **层次靠字号、字重、留白**，不靠颜色块和框；框只给能点的东西。
-- 红色 `text-price`（#C0392B）只给价格。
-- 示例数据要像真的（「测试」「示例 A」这种字一出现就显得 low）；没做出来的功能不放、不放占位图。
-- 颜色只用设计变量对应的类（`bg-primary`、`text-muted-foreground`、`border-border`……）。Tailwind 自带调色板（`gray-500`、`red-600`……）已经关掉，写了也没样式；`#xxxxxx`、`rgb(` 写在 tokens.css 以外的地方 check.py 会报错。缺颜色先在 tokens.css 加变量。
-- 只做浅色。`dark:` 只在祖先有 `.dark` 时生效（现在没有），所以 shadcn 零件里的 `dark:` 样式不会混进来。
-
-## 可用的颜色类
-`background` `foreground` `body` `card` `popover` `primary` `primary-hover` `secondary` `muted` `muted-foreground` `faint` `accent`（悬停底）`highlight`（荧光笔 / 选中）`price` `destructive` `border` `input` `ring` `overlay`（弹层遮罩），前面加 `bg-` / `text-` / `border-` 用。
+前端开发时 `/api` 代理到后端（默认 `127.0.0.1:8710`）。

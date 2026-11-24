@@ -1,0 +1,68 @@
+[project]
+name = "xueshu-huibao-platform"
+version = "0.1.0"
+description = "学术汇报平台后端：图库、接单、交付、后台共用一个进程"
+requires-python = ">=3.11,<3.12"
+# 只写下限；确切版本在 requirements.lock（uv pip compile 生成）。
+# 技术栈基线见 docs/架构与技术栈.md 第三节，不许擅自升级大版本或换库。
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.30",
+    "pydantic>=2.7",
+    "pydantic-settings>=2.4",
+    "sqlalchemy>=2.0.30",
+    "alembic>=1.13",
+    "httpx>=0.27",
+    "python-multipart>=0.0.9",
+    "itsdangerous>=2.2",
+    "pillow>=10.4",
+    "pydantic-ai-slim[openai]>=1.0",
+    # 企业微信回调的加解密要 cryptography（wechatpy 的可选依赖）
+    "wechatpy[cryptography]>=1.8.18",
+    # 运维（docs/任务单/07_运维与数据_设计.md 第三节「现成工具」）：请求计数和耗时分桶用 Prometheus 官方客户端（顺带 /api/ops/metrics），
+    # 日志的 JSON 格式化用 python-json-logger（脱敏过滤器是我们自己的）
+    "prometheus-client>=0.21",
+    "python-json-logger>=3.2",
+    # 图库语义检索：7349×1024 的向量点积（纯 Python 一次 0.3–0.6 秒，numpy 几毫秒）
+    "numpy>=1.26",
+    # 图库插件的远程 MCP 外壳（官方 SDK，不自己实现协议；模块 L）
+    "mcp>=2.3",
+    # 限流（移动窗口；模块 L 先用、底座可扩展 11-18 把计数存进库，几个进程共用，万人档换 Redis 只改配置）
+    "limits>=5.8",
+    # 对象存储用腾讯云官方 SDK（MIT，原来只在 deploy 组给上传脚本用；底座可扩展 11-18 网站存客户文件也要用）
+    "cos-python-sdk-v5>=1.9.30",
+    # 短信验证码（登录、绑手机号；docs/任务单/12_登录与正规化_设计.md 第四节）：腾讯云官方 SDK 只装短信子包（Apache-2.0，
+    # 只依赖 tencentcloud-sdk-python-common → requests）；没配短信时不 import
+    "tencentcloud-sdk-python-sms>=3.1.153",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.2",
+    "pytest-asyncio>=0.23",
+    # 开源导出前的密钥扫描（scripts/skill_export.py；Mac 上跑，不进服务器）
+    "detect-secrets>=1.5",
+]
+# 上线用的离线脚本（只在 Mac 上跑）：scripts/figures_upload_cos.py 把缩略图、预览图传到腾讯云 COS（SDK 已进主依赖）
+deploy = [
+    "cos-python-sdk-v5>=1.9.30",
+]
+# 下面两组默认环境、scripts/verify.sh 不装；锁在 requirements-scale.lock（= requirements.lock + 这两组）
+# 换 PostgreSQL 的那一档才装（主窗口 11-18 批）：scripts/verify-pg.sh 和上 PG 的机器用
+pg = [
+    "psycopg[binary]>=3.2",
+]
+# 压测（scripts/loadtest/，Locust，MIT）
+load = [
+    "locust>=2.40",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+addopts = "-q"
+filterwarnings = [
+    "ignore::DeprecationWarning:wechatpy.*",
+]
