@@ -20,3 +20,8 @@ Python（FastAPI + SQLAlchemy + Alembic），依赖见 `backend/pyproject.toml`�
 - `tests/` 测试
 
 前端开发时 `/api` 代理到后端（默认 `127.0.0.1:8710`）。
+
+## 接口文档 `docs/`
+- `docs/openapi.json`：全部 219 个接口的 OpenAPI 3 描述（路径、参数、请求和返回结构），由后端 FastAPI 导出
+- `docs/接口清单.md`：同一份内容的简表，按模块列「方法 路径 — 说明」，先看这个
+- 数据库：表结构在各模块的 `backend/app/*/models.py`，迁移脚本在 `backend/alembic/versions/`；数据不公开
