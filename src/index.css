@@ -1,0 +1,37 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "./styles/tokens.css";
+
+/* dark: 只在祖先有 .dark 时生效（现在不做深色模式，所以永远不生效）。
+   不写这行的话 Tailwind 默认跟系统深色设置走，shadcn 零件里的 dark: 样式会混进浅色页面。 */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* 官网标题字体（官网 v2）：思源宋体 600 子集，scripts/site_assets.py 切到 public/site-assets/v2/（不进 git）。
+   文件没有时浏览器直接用 --font-headline 后面的系统宋体；swap：字体没到先用系统字，不挡首屏。 */
+@font-face {
+  font-family: "Site Serif";
+  src: url("/site-assets/v2/site-serif.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-background text-body font-sans antialiased;
+    font-size: 15px;
+    line-height: 1.7;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply text-foreground;
+  }
+}

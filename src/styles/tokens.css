@@ -1,0 +1,145 @@
+/*
+ * 设计变量：颜色、字体、圆角。全站唯一可以写色值的地方（scripts/check.py 第 2 条）。
+ * 颜色出处：公众号视觉规范（学术汇报/公众号/流水线/08-排版上传/视觉规范.md「颜色和字」），
+ * 跟 PPT、公众号同一套蓝和灰。标了「骨架加的」的是规范里没有、我补的。
+ *
+ * 分三层：
+ *   1. 色板：原始色值，只在这一层出现。
+ *   2. 语义变量：shadcn 的命名（--background、--primary……）+ 我们自己的几个（--body、--price……），
+ *      全部引用第 1 层。以后加深色模式，只在 .dark { } 里重定义这一层。
+ *   3. 交给 Tailwind：@theme inline 把语义变量变成 bg-primary、text-body 这些类。
+ *      Tailwind 自带的调色板（red-500、gray-100……）整个关掉，写了也不出样式。
+ */
+
+/* ---- 1. 色板 ---- */
+:root {
+  --palette-blue: #1f4e9c; /* 主色：按钮、链接、栏目标签 */
+  --palette-blue-dark: #183e7c; /* 主色按下 / 悬停（骨架加的：主色加深一档） */
+  --palette-blue-light: #d8e4f5; /* 高亮：答案句荧光笔、选中 */
+  --palette-ink: #1d2129; /* 标题、加粗 */
+  --palette-body: #3c4048; /* 正文 */
+  --palette-muted: #6b7079; /* 次要字：图注、说明。11-18 站点整合从 #80868f 深一档：原值在白底上对比度 3.7，小字不到 4.5（psyppt静态站/设计说明.md 第二节、第七节第 4 条） */
+  --palette-faint: #b3b8c0; /* 更淡的小注、声明 */
+  --palette-line: #e3e7ed; /* 卡片边线、分隔线 */
+  --palette-card: #f6f8fa; /* 卡片底 */
+  --palette-hover: #edf0f4; /* 悬停底（骨架加的：介于卡片底和线之间） */
+  --palette-white: #ffffff;
+  --palette-red: #c0392b; /* 只给价格（另见下面 --destructive 的说明） */
+  --palette-overlay: #1d212966; /* 弹层遮罩：标题色 40% 透明（骨架加的） */
+  --palette-shadow: #1d21291f; /* 图片右下角阴影：标题色 12%（psyppt 官网 --figure-shadow，公众号视觉规范「图片阴影」） */
+  /* 官网 v2 加的反色一组（首页样张那条深色带；以后做深色模式也从这里起）。对比度：#f2f3f5 / #a1a7b0 在 #111418 上约 17 / 7.6 */
+  --palette-ink-deep: #111418;
+  --palette-on-deep: #f2f3f5;
+  --palette-on-deep-muted: #a1a7b0;
+  --palette-deep-line: #2b3038;
+}
+
+/* ---- 2. 语义变量 ---- */
+:root {
+  --background: var(--palette-white); /* 页面底：平的白 */
+  --foreground: var(--palette-ink); /* 标题、强调 */
+  --body: var(--palette-body); /* 正文默认色 */
+
+  --card: var(--palette-card);
+  --card-foreground: var(--palette-ink);
+  --popover: var(--palette-white);
+  --popover-foreground: var(--palette-ink);
+
+  --primary: var(--palette-blue);
+  --primary-hover: var(--palette-blue-dark);
+  --primary-foreground: var(--palette-white);
+  --secondary: var(--palette-card);
+  --secondary-foreground: var(--palette-ink);
+  --muted: var(--palette-card);
+  --muted-foreground: var(--palette-muted);
+  --faint: var(--palette-faint);
+  --accent: var(--palette-hover); /* shadcn 用它做悬停 / 键盘聚焦的底 */
+  --accent-foreground: var(--palette-ink);
+  --highlight: var(--palette-blue-light);
+
+  --price: var(--palette-red);
+  /* 规范里红色只给价格；删除这类危险操作（只在后台出现）先借同一个红，要分开再说 */
+  --destructive: var(--palette-red);
+  --destructive-foreground: var(--palette-white);
+
+  --border: var(--palette-line);
+  --input: var(--palette-line);
+  --ring: var(--palette-blue);
+  --overlay: var(--palette-overlay);
+  /* 对外页（交付页）跟 psyppt 官网一致：站名后的红点、图片阴影（psyppt静态站/设计说明.md 第二节） */
+  --brand-dot: var(--palette-red);
+  --figure-shadow: 4px 5px 12px var(--palette-shadow);
+
+  /* 官网 v2：反色带（样张横滑那条深色带）。只在官网首页、样张页用 */
+  --inverse: var(--palette-ink-deep);
+  --inverse-foreground: var(--palette-on-deep);
+  --inverse-muted: var(--palette-on-deep-muted);
+  --inverse-border: var(--palette-deep-line);
+
+  /* 官网 v2 动效：缓动取 OpenAI 首页读到的 cubic-bezier(.22,1,.36,1)；三档时长（按钮 / 换图 / 高亮一笔）。
+     系统「减少动态效果」打开时各组件自己关（官网v2方案.md 第三节） */
+  --dur-quick: 160ms;
+  --dur-swap: 400ms;
+  --dur-mark: 700ms;
+
+  --radius: 0.5rem;
+}
+
+/* ---- 3. 交给 Tailwind ---- */
+@theme {
+  --color-*: initial; /* 关掉 Tailwind 自带调色板 */
+  --font-sans: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  /* 品牌字（站名、页标题）：psyppt 官网用宋体粗；不带字体文件，用系统宋体 */
+  --font-display: "Songti SC", "Noto Serif SC", "Source Han Serif SC", "Noto Serif CJK SC", "STSong", serif;
+  /* 官网标题（官网 v2）：思源宋体 600 的子集，自己的服务器给（scripts/site_assets.py 切，@font-face 在 index.css）；
+     只给官网标题这些写死的字用。交付页标题是客人的题目、切不全，继续用上面的 --font-display，免得一行里两种宋体 */
+  --font-headline: "Site Serif", "Songti SC", "Noto Serif SC", "Source Han Serif SC", "Noto Serif CJK SC", "STSong", serif;
+
+  /* 官网 v2 字号阶梯（桌面 → 手机，clamp 随宽度变）：首屏标题 68→40、每屏标题 44→28、导语 22→18 */
+  --text-display: clamp(2.5rem, 1.6rem + 2.9vw, 4.25rem);
+  --text-display--line-height: 1.15;
+  --text-headline: clamp(1.75rem, 1.3rem + 1.5vw, 2.75rem);
+  --text-headline--line-height: 1.25;
+  --text-lead: clamp(1.125rem, 1rem + 0.4vw, 1.375rem);
+  --text-lead--line-height: 1.6;
+  --ease-site: cubic-bezier(0.22, 1, 0.36, 1); /* 官网 v2 缓动（见上面 :root 的动效说明） */
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-body: var(--body);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-faint: var(--faint);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-highlight: var(--highlight);
+  --color-price: var(--price);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-overlay: var(--overlay);
+  --color-brand-dot: var(--brand-dot);
+  --color-inverse: var(--inverse);
+  --color-inverse-foreground: var(--inverse-foreground);
+  --color-inverse-muted: var(--inverse-muted);
+  --color-inverse-border: var(--inverse-border);
+  --shadow-figure: var(--figure-shadow);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
